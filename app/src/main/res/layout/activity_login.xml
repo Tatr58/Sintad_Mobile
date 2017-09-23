@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/txtView1Act1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/txv1Activity1" />
+
+    <EditText
+        android:id="@+id/ediText1Act1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/txtView2Act1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/txv2Activity1" />
+
+    <EditText
+        android:id="@+id/ediText2Act1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:text=""
+        android:inputType="textPassword" />
+
+    <TextView
+        android:id="@+id/txtView3Act1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorError"/>
+
+    <Button
+        android:id="@+id/btn1Act1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn1Activity1" />
+
+    <Button
+        android:id="@+id/btn2Act1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn2Activity1" />
+</LinearLayout>

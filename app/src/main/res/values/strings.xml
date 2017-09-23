@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Sintad</string>
+    <string name="txv1Activity1">Nombre del Usuario</string>
+    <string name="txv2Activity1">Password del Usuario</string>
+    <string name="btn1Activity1">Ingresar</string>
+    <string name="btn2Activity1">Recuperar Contraseña</string>
+    <string name="txv1Activity2">Bienvenido</string>
+    <string name="txv2Activity2">---------</string>
+    <string name="txv1Activity3">Antigua Contraseña</string>
+    <string name="txv2Activity3">Nueva Contraseña</string>
+    <string name="btn1Activity3">Actualizar Contraseña</string>
+    <string name="btn2Activity3">Cancelar</string>
+</resources>
