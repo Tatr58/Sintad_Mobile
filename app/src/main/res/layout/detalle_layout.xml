@@ -15,11 +15,5 @@
             android:layout_width="match_parent"
             android:layout_height="204dp"
             tools:context=".activity.DetailActivity" />
-
-        <fragment
-            android:id="@+id/detail"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:context=".activity.DetailActivity" />
     </LinearLayout>
 </RelativeLayout>
