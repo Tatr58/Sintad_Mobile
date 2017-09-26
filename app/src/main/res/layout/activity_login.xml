@@ -1,51 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/txtView1Act1"
+    <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/txv1Activity1" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="123dp"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <EditText
-        android:id="@+id/ediText1Act1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:text="" />
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:src="@drawable/logo" />
 
-    <TextView
-        android:id="@+id/txtView2Act1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/txv2Activity1" />
+        <EditText
+            android:id="@+id/ediText1Act1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:ems="10"
+            android:hint="@string/txv1Activity1"
+            android:inputType="text"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:drawableLeft="@drawable/ic_user"
+            android:drawablePadding="16dp"
+            android:drawableTint="@color/colorIC"
+            android:textColor="@color/colorIC"/>
 
-    <EditText
-        android:id="@+id/ediText2Act1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:text=""
-        android:inputType="textPassword" />
 
-    <TextView
-        android:id="@+id/txtView3Act1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/colorError"/>
+        <EditText
+            android:id="@+id/ediText2Act1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ems="10"
+            android:hint="@string/txv2Activity1"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:padding="10dp"
+            android:drawableLeft="@drawable/ic_lock"
+            android:drawablePadding="16dp"
+            android:drawableTint="@color/colorIC"
+            android:textColor="@color/colorIC"/>
 
-    <Button
-        android:id="@+id/btn1Act1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/btn1Activity1" />
+        <Button
+            android:id="@+id/btn1Act1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#EF5350"
+            android:text="@string/btn1Activity1"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="30dp"/>
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/btn2Act1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/btn2Activity1" />
-</LinearLayout>
+</RelativeLayout>

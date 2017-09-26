@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -23,7 +25,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     EditText txvUsuario;
     EditText txvPassword;
     Button btnIngresar;
-    Button btnRecuperar;
     String user_value;
     String password_value;
     TextView txtError;
@@ -36,12 +37,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         txvUsuario =(EditText) this.findViewById(R.id.ediText1Act1);
         txvPassword =(EditText) this.findViewById(R.id.ediText2Act1);
         btnIngresar = (Button) this.findViewById(R.id.btn1Act1);
-        btnRecuperar = (Button) this.findViewById(R.id.btn2Act1);
-        txtError = (TextView) this.findViewById(R.id.txtView3Act1);
 
         btnIngresar.setOnClickListener(this);
-        btnRecuperar.setOnClickListener(this);
-
     }
 
     @Override
@@ -52,7 +49,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 password_value = txvPassword.getText().toString();
 
                 if(user_value.matches("") || password_value.matches("")){
-                    txtError.setText("Error, completar campos");
+                    Toast.makeText(getBaseContext(),"Ingreasr los campos", Toast.LENGTH_LONG).show();
                 } else {
                     loginProcessWithRetrofit(user_value, password_value);
                 }
@@ -77,6 +74,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     intent.putExtra("user_id", id_user);
                     intent.putExtra("nombre_user", nombre_user);
                     LoginActivity.this.startActivity(intent);
+                } else {
+                    Toast.makeText(getBaseContext(),"Usuario o Contraseña incorrectos", Toast.LENGTH_LONG).show();
                 }
             }
             @Override
