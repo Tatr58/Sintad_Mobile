@@ -1,9 +1,9 @@
 package sintad.org.sintad_mobile.activity;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -58,6 +58,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        overridePendingTransition(R.animator.activity_open_scale,R.animator.activity_close_translate);
+    }
+
     private void loginProcessWithRetrofit(final String user, String password){
         AuthAPI mApiService = APIClient.getClient().create(AuthAPI.class);
         Call<List<User>> mService = mApiService.authLogin(user, password);
@@ -73,13 +80,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
                     intent.putExtra("user_id", id_user);
                     intent.putExtra("nombre_user", nombre_user);
-                    LoginActivity.this.startActivity(intent);
+                    ActivityOptions options =
+                            ActivityOptions.makeCustomAnimation(LoginActivity.this,
+                                    R.animator.activity_open_translate,R.animator.activity_close_scale);
+                    LoginActivity.this.startActivity(intent, options.toBundle());
                 } else {
                     Toast.makeText(getBaseContext(),"Usuario o Contraseña incorrectos", Toast.LENGTH_LONG).show();
                 }
             }
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
+                Toast.makeText(getBaseContext(),"Error en Servicios", Toast.LENGTH_LONG).show();
                 call.cancel();
             }
         });

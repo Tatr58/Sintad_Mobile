@@ -3,4 +3,5 @@
     <string name="txv1Activity1">Usuario</string>
     <string name="txv2Activity1">Contraseña</string>
     <string name="btn1Activity1">Ingresar</string>
+    <string name="welcome_user">Bienvenido</string>
 </resources>

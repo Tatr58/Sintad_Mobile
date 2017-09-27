@@ -1,5 +1,6 @@
 package sintad.org.sintad_mobile.activity;
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,7 +25,7 @@ import sintad.org.sintad_mobile.util.APIClient;
 
 public class WelcomeActivity extends Activity{
 
-    TextView txtUsedId, txtUserName;
+    TextView txtUserName;
     ServiceOrderAdapter orderAdapter;
     ListView listView;
 
@@ -37,9 +38,7 @@ public class WelcomeActivity extends Activity{
         int id_empleado = intent.getIntExtra("user_id",0);
         String nombre_user = intent.getStringExtra("nombre_user");
 
-        txtUsedId = findViewById(R.id.txtUserId);
         txtUserName = findViewById(R.id.txtUserName);
-        txtUsedId.setText("" + id_empleado);
         txtUserName.setText(nombre_user);
 
         getServiceOrderList(id_empleado);
