@@ -4,9 +4,11 @@ import android.app.ActivityOptions;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +29,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     Button btnIngresar;
     String user_value;
     String password_value;
-    TextView txtError;
+    ProgressBar progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +39,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         txvUsuario =(EditText) this.findViewById(R.id.ediText1Act1);
         txvPassword =(EditText) this.findViewById(R.id.ediText2Act1);
         btnIngresar = (Button) this.findViewById(R.id.btn1Act1);
+        progress = (ProgressBar) this.findViewById(R.id.progressBarLogin);
 
+        progress.setVisibility(View.GONE);
         btnIngresar.setOnClickListener(this);
     }
 
@@ -51,6 +55,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if(user_value.matches("") || password_value.matches("")){
                     Toast.makeText(getBaseContext(),"Ingreasr los campos", Toast.LENGTH_LONG).show();
                 } else {
+                    btnIngresar.setEnabled(false);
+                    progress.setVisibility(View.VISIBLE);
                     loginProcessWithRetrofit(user_value, password_value);
                 }
                 break;
@@ -71,6 +77,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mService.enqueue(new Callback<List<User>>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                progress.setVisibility(View.GONE);
+                Log.d("Respuesta de Login Ok", response.toString());
                 int id_user;
                 String nombre_user;
                 List<User> mLoginObject = response.body();
@@ -90,7 +98,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             }
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
-                Toast.makeText(getBaseContext(),"Error en Servicios", Toast.LENGTH_LONG).show();
+                btnIngresar.setEnabled(true);
+                progress.setVisibility(View.GONE);
+                Log.d("Respuesta de Login Err", t.toString());
+                Toast.makeText(getBaseContext(),"Error de Conexión", Toast.LENGTH_LONG).show();
                 call.cancel();
             }
         });

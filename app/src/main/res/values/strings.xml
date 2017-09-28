@@ -4,4 +4,6 @@
     <string name="txv2Activity1">Contraseña</string>
     <string name="btn1Activity1">Ingresar</string>
     <string name="welcome_user">Bienvenido</string>
+    <string name="title_activity_order_detail">Detalle de Ordenes</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 </resources>

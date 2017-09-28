@@ -60,7 +60,7 @@ public class WelcomeActivity extends Activity{
                     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                         TextView c = (TextView) findViewById(R.id.txt1RowLay1);
                         String nro_orden = c.getText().toString();
-                        Intent intent = new Intent(WelcomeActivity.this, DetailActivity.class);
+                        Intent intent = new Intent(WelcomeActivity.this, OrderDetailActivity.class);
                         intent.putExtra("nro_ordern", nro_orden);
                         WelcomeActivity.this.startActivity(intent);
                     }
