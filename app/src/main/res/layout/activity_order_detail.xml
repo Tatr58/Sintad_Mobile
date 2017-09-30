@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/appbar_padding_top"
         android:theme="@style/AppTheme.AppBarOverlay"
-        android:background="#EF5350">
+        android:background="#E53935">
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"

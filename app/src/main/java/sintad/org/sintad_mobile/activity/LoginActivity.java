@@ -40,6 +40,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         txvPassword =(EditText) this.findViewById(R.id.ediText2Act1);
         btnIngresar = (Button) this.findViewById(R.id.btn1Act1);
         progress = (ProgressBar) this.findViewById(R.id.progressBarLogin);
+        btnIngresar.setEnabled(true);
 
         progress.setVisibility(View.GONE);
         btnIngresar.setOnClickListener(this);
@@ -78,6 +79,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 progress.setVisibility(View.GONE);
+                btnIngresar.setEnabled(true);
+
                 Log.d("Respuesta de Login Ok", response.toString());
                 int id_user;
                 String nombre_user;
