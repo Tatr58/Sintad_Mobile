@@ -4,6 +4,7 @@ package sintad.org.sintad_mobile.fragment;
  * Created by TTR on 28/09/2017.
  */
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -43,7 +45,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import sintad.org.sintad_mobile.R;
+import sintad.org.sintad_mobile.interface_api.OrderAPI;
+import sintad.org.sintad_mobile.model.Route;
+import sintad.org.sintad_mobile.util.APIClient;
 import sintad.org.sintad_mobile.util.DataParser;
 
 public class RoutesFragment extends Fragment implements OnMapReadyCallback,
@@ -51,18 +59,21 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    private static final String TAG = "RoutesFragment";
     private GoogleMap mMap;
-    ArrayList<LatLng> MarkerPoints;
     GoogleApiClient mGoogleApiClient;
-    Location mLastLocation;
-    Marker mCurrLocationMarker;
+    ArrayList<MarkerOptions> mMarkerArray = new ArrayList<>();
     LocationRequest mLocationRequest;
+    String id_order;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_order_detail_route, null, false);
-        MarkerPoints = new ArrayList<>();
+
+        Intent intent = getActivity().getIntent();
+        id_order = intent.getStringExtra("nro_orden");
+
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -73,43 +84,62 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mMap.clear();
+        getRouteList(id_order);
+    }
 
-            @Override
-            public void onMapClick(LatLng point) {
 
-                if (MarkerPoints.size() > 1) {
-                    MarkerPoints.clear();
-                    mMap.clear();
-                }
-                MarkerPoints.add(point);
-                MarkerOptions options = new MarkerOptions();
+    private void loadRoutes (List<Route> routeList) {
+        if (!routeList.isEmpty()){
+            LatLng orig_marker = new LatLng(routeList.get(0).getLattitud_origen(), routeList.get(0).getLongitud_origen());
+            MarkerOptions orig_options = new MarkerOptions();
+            int padding = 50;
+            orig_options.position(orig_marker);
+            mMap.addMarker(orig_options);
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(orig_marker));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+            mMarkerArray.add(orig_options);
+            LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
-                options.position(point);
+            for (Route route: routeList) {
+                LatLng origen_ruta = new LatLng(route.getLattitud_origen(), route.getLongitud_origen());
+                LatLng destino_ruta = new LatLng(route.getLatitud_fin(), route.getLongitud_fin());
+                builder.include(origen_ruta);
+                builder.include(destino_ruta);
 
-                if (MarkerPoints.size() == 1) {
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                } else if (MarkerPoints.size() == 2) {
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-                }
+                if (!origen_ruta.toString().contains("0.0")
+                        && !destino_ruta.toString().contains("0.0") ) {
+                    MarkerOptions dest_options = new MarkerOptions();
+                    dest_options.position(destino_ruta);
+                    dest_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    mMap.addMarker(dest_options);
+                    mMarkerArray.add(dest_options);
+                    builder.include(destino_ruta);
 
-                mMap.addMarker(options);
-
-                if (MarkerPoints.size() >= 2) {
-                    LatLng origin = MarkerPoints.get(0);
-                    LatLng dest = MarkerPoints.get(1);
-
-                    String url = getUrl(origin, dest);
-                    Log.d("onMapClick", url.toString());
+                    String url = getUrl(origen_ruta, destino_ruta);
+                    Log.d("loadRoute", url);
                     FetchUrl FetchUrl = new FetchUrl();
                     FetchUrl.execute(url);
-
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(origin));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
                 }
             }
-        });
+
+            if (mMarkerArray.size() > 2) {
+                LatLng first_marker =  mMarkerArray.get(0).getPosition();
+                LatLng last_marker =  mMarkerArray.get(mMarkerArray.size()-1).getPosition();
+
+                Location orig_location = new Location("");
+                orig_location.setLatitude(first_marker.latitude);
+                orig_location.setLongitude(first_marker.longitude);
+
+                Location dest_location = new Location("");
+                orig_location.setLatitude(last_marker.latitude);
+                orig_location.setLongitude(last_marker.longitude);
+
+                float distance =  orig_location.distanceTo(dest_location) / 1000 ;
+                Log.d(TAG, "" + distance);
+            }
+        }
     }
 
     private String getUrl(LatLng origin, LatLng dest) {
@@ -276,25 +306,6 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onLocationChanged(Location location) {
 
-        mLastLocation = location;
-        if (mCurrLocationMarker != null) {
-            mCurrLocationMarker.remove();
-        }
-
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title("Current Position");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        mCurrLocationMarker = mMap.addMarker(markerOptions);
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
-
-        if (mGoogleApiClient != null) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        }
-
     }
 
     @Override
@@ -349,5 +360,25 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
+    private void getRouteList(final String id_order){
+        OrderAPI mApiService = APIClient.getClient().create(OrderAPI.class);
+        Call<List<Route>> mService = mApiService.getRouteList(id_order);
+        mService.enqueue(new Callback<List<Route>>() {
+            @Override
+            public void onResponse(Call<List<Route>> call, Response<List<Route>> response) {
+                if (response.isSuccessful()) {
+                    List<Route> mRouteObj = response.body();
+                    loadRoutes(mRouteObj);
+                    Log.d(TAG, response.body().toString());
+                } else {
+                    try {Log.e(TAG, response.errorBody().string());} catch (IOException ignored) {}
+                }
+            }
+            @Override
+            public void onFailure(Call<List<Route>> call, Throwable t) {
+                call.cancel();
+            }
+        });
+    }
 
 }

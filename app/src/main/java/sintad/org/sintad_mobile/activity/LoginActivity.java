@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 
 import retrofit2.Call;
@@ -24,6 +25,7 @@ import sintad.org.sintad_mobile.util.APIClient;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private static final String TAG = "LoginActivity";
     EditText txvUsuario;
     EditText txvPassword;
     Button btnIngresar;
@@ -80,30 +82,34 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 progress.setVisibility(View.GONE);
                 btnIngresar.setEnabled(true);
-
-                Log.d("Respuesta de Login Ok", response.toString());
-                int id_user;
-                String nombre_user;
-                List<User> mLoginObject = response.body();
-                if (mLoginObject.size() > 0) {
-                    id_user = mLoginObject.get(0).getIdUser();
-                    nombre_user = mLoginObject.get(0).getNombre();
-                    Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
-                    intent.putExtra("user_id", id_user);
-                    intent.putExtra("nombre_user", nombre_user);
-                    ActivityOptions options =
-                            ActivityOptions.makeCustomAnimation(LoginActivity.this,
-                                    R.animator.activity_open_translate,R.animator.activity_close_scale);
-                    LoginActivity.this.startActivity(intent, options.toBundle());
+                if (response.isSuccessful()){
+                    Log.d(TAG, response.body().toString());
+                    int id_user;
+                    String nombre_user;
+                    List<User> mLoginObject = response.body();
+                    if (mLoginObject.size() > 0) {
+                        id_user = mLoginObject.get(0).getIdUser();
+                        nombre_user = mLoginObject.get(0).getNombre();
+                        Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
+                        intent.putExtra("user_id", id_user);
+                        intent.putExtra("nombre_user", nombre_user);
+                        ActivityOptions options =
+                                ActivityOptions.makeCustomAnimation(LoginActivity.this,
+                                        R.animator.activity_open_translate,R.animator.activity_close_scale);
+                        LoginActivity.this.startActivity(intent, options.toBundle());
+                    } else {
+                        Toast.makeText(getBaseContext(),"Usuario o Contraseña incorrectos", Toast.LENGTH_LONG).show();
+                    }
                 } else {
-                    Toast.makeText(getBaseContext(),"Usuario o Contraseña incorrectos", Toast.LENGTH_LONG).show();
+                    try {Log.e(TAG, response.errorBody().string());} catch (IOException ignored) {}
+                    Toast.makeText(getBaseContext(),"Usuario no Existente", Toast.LENGTH_LONG).show();
                 }
             }
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
                 btnIngresar.setEnabled(true);
                 progress.setVisibility(View.GONE);
-                Log.d("Respuesta de Login Err", t.toString());
+                Log.e(TAG, t.toString());
                 Toast.makeText(getBaseContext(),"Error de Conexión", Toast.LENGTH_LONG).show();
                 call.cancel();
             }
