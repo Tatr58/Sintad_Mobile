@@ -17,11 +17,17 @@ public class Route {
     @SerializedName("lon_P")
     private double longitud_origen;
 
+    @SerializedName("depoNom_P")
+    private String nombre_depo_origen;
+
     @SerializedName("lat_L")
     private double latitud_fin;
 
     @SerializedName("lon_L")
     private double longitud_fin;
+
+    @SerializedName("depoNom_L")
+    private String nombre_depo_fin;
 
     public int getId_viaje() {
         return id_viaje;
@@ -61,5 +67,21 @@ public class Route {
 
     public void setLongitud_fin(double longitud_fin) {
         this.longitud_fin = longitud_fin;
+    }
+
+    public String getNombre_depo_origen() {
+        return nombre_depo_origen;
+    }
+
+    public void setNombre_depo_origen(String nombre_depo_origen) {
+        this.nombre_depo_origen = nombre_depo_origen;
+    }
+
+    public String getNombre_depo_fin() {
+        return nombre_depo_fin;
+    }
+
+    public void setNombre_depo_fin(String nombre_depo_fin) {
+        this.nombre_depo_fin = nombre_depo_fin;
     }
 }

@@ -102,7 +102,10 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
                     && !orig_marker.toString().contains("0.0")) {
                 MarkerOptions orig_options = new MarkerOptions();
                 orig_options.position(orig_marker);
+                orig_options.title((routeList.get(0).getNombre_depo_origen()));
+
                 mMap.addMarker(orig_options);
+
                 mMarkerArray.add(orig_options);
                 builder.include(orig_marker);
             }
@@ -115,7 +118,9 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
                         && !destino_ruta.toString().contains("0.0")) {
                     MarkerOptions dest_options = new MarkerOptions();
                     dest_options.position(destino_ruta);
+                    dest_options.title(route.getNombre_depo_fin());
                     dest_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
                     mMap.addMarker(dest_options);
                     mMarkerArray.add(dest_options);
 
