@@ -4,6 +4,7 @@ package sintad.org.sintad_mobile.fragment;
  * Created by TTR on 28/09/2017.
  */
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -84,7 +87,6 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.clear();
         getRouteList(id_order);
     }
@@ -92,29 +94,32 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
 
     private void loadRoutes (List<Route> routeList) {
         if (!routeList.isEmpty()){
-            LatLng orig_marker = new LatLng(routeList.get(0).getLattitud_origen(), routeList.get(0).getLongitud_origen());
-            MarkerOptions orig_options = new MarkerOptions();
             int padding = 50;
-            orig_options.position(orig_marker);
-            mMap.addMarker(orig_options);
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(orig_marker));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-            mMarkerArray.add(orig_options);
+            LatLng orig_marker = new LatLng(routeList.get(0).getLatitud_origen(), routeList.get(0).getLongitud_origen());
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
+            if (!orig_marker.toString().contains("0.0")
+                    && !orig_marker.toString().contains("0.0")) {
+                MarkerOptions orig_options = new MarkerOptions();
+                orig_options.position(orig_marker);
+                mMap.addMarker(orig_options);
+                mMarkerArray.add(orig_options);
+                builder.include(orig_marker);
+            }
+
             for (Route route: routeList) {
-                LatLng origen_ruta = new LatLng(route.getLattitud_origen(), route.getLongitud_origen());
+                LatLng origen_ruta = new LatLng(route.getLatitud_origen(), route.getLongitud_origen());
                 LatLng destino_ruta = new LatLng(route.getLatitud_fin(), route.getLongitud_fin());
-                builder.include(origen_ruta);
-                builder.include(destino_ruta);
 
                 if (!origen_ruta.toString().contains("0.0")
-                        && !destino_ruta.toString().contains("0.0") ) {
+                        && !destino_ruta.toString().contains("0.0")) {
                     MarkerOptions dest_options = new MarkerOptions();
                     dest_options.position(destino_ruta);
                     dest_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
                     mMap.addMarker(dest_options);
                     mMarkerArray.add(dest_options);
+
+                    builder.include(origen_ruta);
                     builder.include(destino_ruta);
 
                     String url = getUrl(origen_ruta, destino_ruta);
@@ -139,6 +144,26 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
                 float distance =  orig_location.distanceTo(dest_location) / 1000 ;
                 Log.d(TAG, "" + distance);
             }
+
+            LatLngBounds bounds = builder.build();
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+            mMap.animateCamera(cu);
+        } else {
+            LatLng default_loc = new LatLng(-12.026733806103568, -76.98777915);
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(default_loc));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
+            mMap.getUiSettings().setAllGesturesEnabled(false);
+            mMap.getUiSettings().setZoomControlsEnabled(false);
+
+            AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
+            alertDialog.setMessage("No se registró una ruta válida");
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.show();
         }
     }
 
@@ -172,7 +197,7 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
             }
 
             data = sb.toString();
-            Log.d("downloadUrl", data.toString());
+            Log.d("downloadUrl", data);
             br.close();
 
         } catch (Exception e) {

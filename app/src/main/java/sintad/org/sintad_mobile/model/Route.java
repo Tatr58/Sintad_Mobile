@@ -12,7 +12,7 @@ public class Route {
     private int id_viaje;
 
     @SerializedName("lat_P")
-    private double lattitud_origen;
+    private double latitud_origen;
 
     @SerializedName("lon_P")
     private double longitud_origen;
@@ -31,12 +31,12 @@ public class Route {
         this.id_viaje = id_viaje;
     }
 
-    public double getLattitud_origen() {
-        return lattitud_origen;
+    public double getLatitud_origen() {
+        return latitud_origen;
     }
 
-    public void setLattitud_origen(double lattitud_origen) {
-        this.lattitud_origen = lattitud_origen;
+    public void setLatitud_origen(double latitud_origen) {
+        this.latitud_origen = latitud_origen;
     }
 
     public double getLongitud_origen() {

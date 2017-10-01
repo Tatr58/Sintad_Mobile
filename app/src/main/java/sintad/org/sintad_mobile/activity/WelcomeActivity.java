@@ -64,10 +64,10 @@ public class WelcomeActivity extends Activity{
                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                            TextView c = (TextView) findViewById(R.id.txt1RowLay1);
-                            String nro_orden = c.getText().toString();
+                            ServiceOrder nro_orden = (ServiceOrder) listView.getItemAtPosition(i);
+                            String id_orden = nro_orden.getIdOrden();
                             Intent intent = new Intent(WelcomeActivity.this, OrderDetailActivity.class);
-                            intent.putExtra("nro_orden", nro_orden);
+                            intent.putExtra("nro_orden", id_orden);
                             WelcomeActivity.this.startActivity(intent);
                         }
                     });
