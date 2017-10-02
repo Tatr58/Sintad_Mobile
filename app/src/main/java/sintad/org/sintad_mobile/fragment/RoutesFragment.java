@@ -19,6 +19,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -46,7 +48,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -68,12 +72,12 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
     ArrayList<MarkerOptions> mMarkerArray = new ArrayList<>();
     LocationRequest mLocationRequest;
     String id_order;
+    Button btnIniciar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_order_detail_route, null, false);
-
         Intent intent = getActivity().getIntent();
         id_order = intent.getStringExtra("nro_orden");
 
@@ -89,17 +93,22 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.clear();
         getRouteList(id_order);
+        btnIniciar = getActivity().findViewById(R.id.btn1FragemtRoute);
     }
 
 
     private void loadRoutes (List<Route> routeList) {
         if (!routeList.isEmpty()){
-            int padding = 50;
-            LatLng orig_marker = new LatLng(routeList.get(0).getLatitud_origen(), routeList.get(0).getLongitud_origen());
+            int padding = 60;
+            Boolean sameOrigin = false;
             LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+            LatLng orig_marker = new LatLng(routeList.get(0).getLatitud_origen(), routeList.get(0).getLongitud_origen());
+            Boolean marker_not_exist = true;
 
             if (!orig_marker.toString().contains("0.0")
                     && !orig_marker.toString().contains("0.0")) {
+                sameOrigin = isSameOrigin(routeList);
                 MarkerOptions orig_options = new MarkerOptions();
                 orig_options.position(orig_marker);
                 orig_options.title((routeList.get(0).getNombre_depo_origen()));
@@ -110,31 +119,64 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
                 builder.include(orig_marker);
             }
 
-            for (Route route: routeList) {
+            for (Route route : routeList) {
+
                 LatLng origen_ruta = new LatLng(route.getLatitud_origen(), route.getLongitud_origen());
                 LatLng destino_ruta = new LatLng(route.getLatitud_fin(), route.getLongitud_fin());
 
                 if (!origen_ruta.toString().contains("0.0")
                         && !destino_ruta.toString().contains("0.0")) {
-                    MarkerOptions dest_options = new MarkerOptions();
-                    dest_options.position(destino_ruta);
-                    dest_options.title(route.getNombre_depo_fin());
-                    dest_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
-                    mMap.addMarker(dest_options);
-                    mMarkerArray.add(dest_options);
+                    if (sameOrigin && mMarkerArray.size() > 1) {
+                        origen_ruta = mMarkerArray.get(mMarkerArray.size()-1).getPosition();
+                    }
 
-                    builder.include(origen_ruta);
-                    builder.include(destino_ruta);
+                    if (!mMarkerArray.isEmpty()) {
+                        marker_not_exist = isLocationFree(destino_ruta);
+                    }
 
-                    String url = getUrl(origen_ruta, destino_ruta);
-                    Log.d("loadRoute", url);
-                    FetchUrl FetchUrl = new FetchUrl();
-                    FetchUrl.execute(url);
+                    if (marker_not_exist) {
+                        if (!sameOrigin && mMarkerArray.size() > 1) {
+                            LatLng last_marker = mMarkerArray.get(mMarkerArray.size()-1).getPosition();
+
+                            MarkerOptions orig_options = new MarkerOptions();
+                            orig_options.position(origen_ruta);
+                            orig_options.title(route.getNombre_depo_origen());
+                            orig_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                            mMap.addMarker(orig_options);
+                            mMarkerArray.add(orig_options);
+
+                            builder.include(last_marker);
+
+                            String url = getUrl(last_marker, origen_ruta);
+                            Log.d("loadRoute !Origin", url);
+                            FetchUrl FetchUrl = new FetchUrl();
+                            FetchUrl.execute(url);
+                        }
+
+                        MarkerOptions dest_options = new MarkerOptions();
+                        dest_options.position(destino_ruta);
+                        dest_options.title(route.getNombre_depo_fin());
+                        dest_options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                        mMap.addMarker(dest_options);
+                        mMarkerArray.add(dest_options);
+
+                        builder.include(origen_ruta);
+                        builder.include(destino_ruta);
+
+                        String url = getUrl(origen_ruta, destino_ruta);
+                        Log.d("loadRoute", url);
+                        FetchUrl FetchUrl = new FetchUrl();
+                        FetchUrl.execute(url);
+                    }
                 }
             }
 
-            if (mMarkerArray.size() > 2) {
+            Log.d(TAG, "Markers: " + mMarkerArray.size());
+
+            if (mMarkerArray.size() > 1) {
                 LatLng first_marker =  mMarkerArray.get(0).getPosition();
                 LatLng last_marker =  mMarkerArray.get(mMarkerArray.size()-1).getPosition();
 
@@ -159,6 +201,7 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
             mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
             mMap.getUiSettings().setAllGesturesEnabled(false);
             mMap.getUiSettings().setZoomControlsEnabled(false);
+            btnIniciar.setVisibility(View.GONE);
 
             AlertDialog alertDialog = new AlertDialog.Builder(getActivity()).create();
             alertDialog.setMessage("No se registró una ruta válida");
@@ -409,6 +452,31 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
                 call.cancel();
             }
         });
+    }
+
+    private Boolean isLocationFree(LatLng marker_destino) {
+        Boolean exists = true;
+        for (MarkerOptions marker: mMarkerArray) {
+            if (marker_destino.latitude == marker.getPosition().latitude &&
+                    marker_destino.longitude == marker.getPosition().longitude) {
+                exists = false;
+            }
+        }
+        return exists;
+    }
+
+
+    private Boolean isSameOrigin(List<Route> routeList) {
+
+        final Set<LatLng> set_routes = new HashSet<>();
+
+        for (Route route : routeList) {
+            LatLng tmp_latlng = new LatLng(route.getLatitud_origen(), route.getLongitud_origen());
+            if (!set_routes.add(tmp_latlng)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
