@@ -56,6 +56,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import sintad.org.sintad_mobile.R;
+import sintad.org.sintad_mobile.activity.RouteActivity;
 import sintad.org.sintad_mobile.interface_api.OrderAPI;
 import sintad.org.sintad_mobile.model.Route;
 import sintad.org.sintad_mobile.util.APIClient;
@@ -64,7 +65,7 @@ import sintad.org.sintad_mobile.util.DataParser;
 public class RoutesFragment extends Fragment implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener, View.OnClickListener {
 
     private static final String TAG = "RoutesFragment";
     private GoogleMap mMap;
@@ -80,11 +81,20 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
         View view = inflater.inflate(R.layout.fragment_order_detail_route, null, false);
         Intent intent = getActivity().getIntent();
         id_order = intent.getStringExtra("nro_orden");
-
         SupportMapFragment mapFragment = (SupportMapFragment) this.getChildFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        btnIniciar = (Button) view.findViewById(R.id.btn1FragemtRoute);
+        btnIniciar.setOnClickListener(this);
+        checkLocationPermission();
         return view;
+    }
+
+    @Override
+    public void onClick(View view) {
+        Intent intent = new Intent(getActivity(), RouteActivity.class);
+        this.startActivity(intent);
     }
 
     @Override
