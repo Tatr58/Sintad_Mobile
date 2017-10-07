@@ -34,7 +34,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -108,6 +107,11 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
 
 
     private void loadRoutes (List<Route> routeList) {
+
+        if(!mMarkerArray.isEmpty()) {
+            mMarkerArray.clear();
+        }
+
         if (!routeList.isEmpty()){
             int padding = 60;
             Boolean sameOrigin = false;
