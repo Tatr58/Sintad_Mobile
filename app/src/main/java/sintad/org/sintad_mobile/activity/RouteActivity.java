@@ -25,12 +25,14 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -55,7 +57,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private static final String TAG = RouteActivity.class.getSimpleName();
-    int padding = 40;
+    int padding = 200;
     GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
@@ -188,6 +190,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     public void drawPrincipalLine(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         is_principal = true;
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
         if (mCurrLocationMarker != null) {
             mCurrLocationMarker.remove();
@@ -197,14 +200,18 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         markerOptions.position(latLng);
         markerOptions.title("Mi Ubicación");
         markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.location));
+        builder.include(latLng);
 
         mCurrLocationMarker = mMap.addMarker(markerOptions);
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, padding));
-
         MarkerOptions marker_dest = mMarkerArray.get(0);
 
         LatLng destino_activo = new LatLng(marker_dest.getPosition().latitude,
                 marker_dest.getPosition().longitude);
+        builder.include(destino_activo);
+
+        LatLngBounds bounds = builder.build();
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+        mMap.moveCamera(cu);
 
         String url = LocationUtils.getUrl(latLng, destino_activo);
         Log.d("loadRoute Activa", url);
