@@ -38,7 +38,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -183,10 +182,10 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
     @Override
     public void onLocationChanged(Location location) {
-        drawPrincipalLine(location, principal_line);
+        drawPrincipalLine(location);
     }
 
-    public void drawPrincipalLine(Location location, ArrayList<Polyline> principal) {
+    public void drawPrincipalLine(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         is_principal = true;
 

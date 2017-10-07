@@ -196,22 +196,6 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
 
             Log.d(TAG, "Markers: " + mMarkerArray.size());
 
-            if (mMarkerArray.size() > 1) {
-                LatLng first_marker =  mMarkerArray.get(0).getPosition();
-                LatLng last_marker =  mMarkerArray.get(mMarkerArray.size()-1).getPosition();
-
-                Location orig_location = new Location("");
-                orig_location.setLatitude(first_marker.latitude);
-                orig_location.setLongitude(first_marker.longitude);
-
-                Location dest_location = new Location("");
-                orig_location.setLatitude(last_marker.latitude);
-                orig_location.setLongitude(last_marker.longitude);
-
-                float distance =  orig_location.distanceTo(dest_location) / 1000 ;
-                Log.d(TAG, "" + distance);
-            }
-
             LatLngBounds bounds = builder.build();
             CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
             mMap.animateCamera(cu);
