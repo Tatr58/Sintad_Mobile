@@ -1,7 +1,6 @@
 package sintad.org.sintad_mobile.activity;
 import android.Manifest;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -9,12 +8,14 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -47,6 +48,7 @@ import java.util.List;
 import sintad.org.sintad_mobile.R;
 import sintad.org.sintad_mobile.util.DataParser;
 import sintad.org.sintad_mobile.util.LocationUtils;
+import com.google.maps.android.SphericalUtil;
 
 /**
  * Created by TTR on 1/10/2017.
@@ -57,7 +59,9 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private static final String TAG = RouteActivity.class.getSimpleName();
-    int padding = 200;
+    private static final int padding = 200;
+    private static final double min_distance = 20;
+
     GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
@@ -68,6 +72,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     String id_order;
     Boolean is_principal = false;
     ArrayList<Polyline> principal_line = new ArrayList<>();
+    BottomSheetBehavior bottomRoute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,8 +83,16 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             checkLocationPermission();
         }
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.punto_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
 
+        bottomRoute = BottomSheetBehavior.from(findViewById(R.id.bottomSheetLayout));
+        bottomRoute.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -149,8 +162,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     @Override
     public void onConnected(Bundle bundle) {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(120000);
-        mLocationRequest.setFastestInterval(120000);
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
         if (ContextCompat.checkSelfPermission(this,
@@ -189,6 +202,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
     public void drawPrincipalLine(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        double distance_mc;
+
         is_principal = true;
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
@@ -213,10 +228,24 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
         mMap.moveCamera(cu);
 
+        distance_mc = getDistance(latLng,destino_activo);
+        Log.d(TAG + " Active Distance", " " + distance_mc);
+
+        if(distance_mc != 0 && distance_mc < min_distance) {
+            bottomRoute.setState(BottomSheetBehavior.STATE_EXPANDED);
+        } else {
+            bottomRoute.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
+
         String url = LocationUtils.getUrl(latLng, destino_activo);
         Log.d("loadRoute Activa", url);
         FetchUrl FetchUrl = new RouteActivity.FetchUrl();
         FetchUrl.execute(url);
+    }
+
+    private double getDistance(LatLng inicio, LatLng fin) {
+        double distance = SphericalUtil.computeDistanceBetween(inicio, fin);
+        return distance;
     }
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;

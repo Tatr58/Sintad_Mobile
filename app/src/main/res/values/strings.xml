@@ -6,4 +6,10 @@
     <string name="welcome_user">Bienvenido</string>
     <string name="title_activity_order_detail">Detalle de Ordenes</string>
     <string name="btn1FragemtRoute">Iniciar Ruta</string>
+    <string name="btn1Route">Registrar Etapa</string>
+
+    <string-array name="punto_array">
+        <item>Punto de Carga</item>
+        <item>Punto de Entrega</item>
+    </string-array>
 </resources>
