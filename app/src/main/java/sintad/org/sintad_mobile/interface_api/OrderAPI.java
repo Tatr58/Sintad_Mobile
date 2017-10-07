@@ -4,6 +4,7 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -21,6 +22,7 @@ public interface OrderAPI {
     @GET("/service_order_deta/getRoute/{id_order}")
     Call<List<Route>> getRouteList(@Path("id_order") String id_order);
 
+    @FormUrlEncoded
     @POST("/service_order_deta/registerStar")
     Call<Route> saveStage(@Field("id_order") String id_order,
                                 @Field("latitud") double latitud,

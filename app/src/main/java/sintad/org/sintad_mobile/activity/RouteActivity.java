@@ -290,11 +290,17 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             @Override
             public void onResponse(Call<Route> call, Response<Route> response) {
                 Log.d(TAG, "Resolves Route");
+                Toast response_ok = Toast.makeText(getBaseContext(),"Se registró etapa", Toast.LENGTH_LONG);
+                response_ok.setGravity(Gravity.CENTER, 0,0);
+                response_ok.show();
             }
 
             @Override
             public void onFailure(Call<Route> call, Throwable t) {
                 Log.d(TAG, "Error Route");
+                Toast response_error = Toast.makeText(getBaseContext(),"Error", Toast.LENGTH_LONG);
+                response_error.setGravity(Gravity.CENTER, 0,0);
+                response_error.show();
             }
         });
     }
