@@ -14,6 +14,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -232,6 +233,10 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         Log.d(TAG + " Active Distance", " " + distance_mc);
 
         if(distance_mc != 0 && distance_mc < min_distance) {
+            Toast info_ruta = Toast.makeText(getBaseContext(),"Se encuentra cerca del punto destino, registrar " +
+                    "etapa", Toast.LENGTH_LONG);
+            info_ruta.setGravity(Gravity.CENTER, 0,0);
+            info_ruta.show();
             bottomRoute.setState(BottomSheetBehavior.STATE_EXPANDED);
         } else {
             bottomRoute.setState(BottomSheetBehavior.STATE_HIDDEN);
