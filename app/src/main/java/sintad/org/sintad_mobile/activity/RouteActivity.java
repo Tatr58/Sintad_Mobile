@@ -15,7 +15,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -46,7 +49,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.http.POST;
 import sintad.org.sintad_mobile.R;
+import sintad.org.sintad_mobile.interface_api.OrderAPI;
+import sintad.org.sintad_mobile.model.Route;
+import sintad.org.sintad_mobile.model.User;
+import sintad.org.sintad_mobile.util.APIClient;
 import sintad.org.sintad_mobile.util.DataParser;
 import sintad.org.sintad_mobile.util.LocationUtils;
 import com.google.maps.android.SphericalUtil;
@@ -57,7 +68,9 @@ import com.google.maps.android.SphericalUtil;
 
 public class RouteActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener,
+        View.OnClickListener {
 
     private static final String TAG = RouteActivity.class.getSimpleName();
     private static final int padding = 200;
@@ -74,6 +87,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     Boolean is_principal = false;
     ArrayList<Polyline> principal_line = new ArrayList<>();
     BottomSheetBehavior bottomRoute;
+    Button registrarEtapa;
+    String stageType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +99,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             checkLocationPermission();
         }
 
+        id_order = getIntent().getStringExtra("nro_orden");
+
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.punto_array, android.R.layout.simple_spinner_item);
@@ -93,10 +110,24 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         bottomRoute = BottomSheetBehavior.from(findViewById(R.id.bottomSheetLayout));
         bottomRoute.setState(BottomSheetBehavior.STATE_HIDDEN);
 
+        registrarEtapa = findViewById(R.id.btn1OnRoute);
+        registrarEtapa.setOnClickListener(this);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn1OnRoute:
+                int tipo = 1;
+                double lat_save = mLastLocation.getLatitude();
+                double long_save = mLastLocation.getLatitude();
+                saveStage(id_order, lat_save, long_save, tipo);
+        }
+
     }
 
     @Override
@@ -112,7 +143,6 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMarkerArray = getIntent().getParcelableArrayListExtra("markers");
-        id_order = getIntent().getStringExtra("nro_orden");
         int counter = 0;
         is_principal = false;
 
@@ -251,6 +281,22 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     private double getDistance(LatLng inicio, LatLng fin) {
         double distance = SphericalUtil.computeDistanceBetween(inicio, fin);
         return distance;
+    }
+
+    private void saveStage(String nro_orden, double lat, double lng, int tipo) {
+        OrderAPI mApiService = APIClient.getClient().create(OrderAPI.class);
+        Call<Route> mService = mApiService.saveStage(nro_orden, lat, lng, tipo);
+        mService.enqueue(new Callback<Route>() {
+            @Override
+            public void onResponse(Call<Route> call, Response<Route> response) {
+                Log.d(TAG, "Resolves Route");
+            }
+
+            @Override
+            public void onFailure(Call<Route> call, Throwable t) {
+                Log.d(TAG, "Error Route");
+            }
+        });
     }
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
