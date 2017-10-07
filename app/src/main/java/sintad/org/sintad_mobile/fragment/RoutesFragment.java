@@ -60,13 +60,14 @@ import sintad.org.sintad_mobile.interface_api.OrderAPI;
 import sintad.org.sintad_mobile.model.Route;
 import sintad.org.sintad_mobile.util.APIClient;
 import sintad.org.sintad_mobile.util.DataParser;
+import sintad.org.sintad_mobile.util.LocationUtils;
 
 public class RoutesFragment extends Fragment implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener, View.OnClickListener {
 
-    private static final String TAG = "RoutesFragment";
+    private static final String TAG = RoutesFragment.class.getSimpleName();
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     ArrayList<MarkerOptions> mMarkerArray = new ArrayList<>();
@@ -92,7 +93,12 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onClick(View view) {
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("markers", mMarkerArray);
+        bundle.putString("id_order", id_order);
+
         Intent intent = new Intent(getActivity(), RouteActivity.class);
+        intent.putExtras(bundle);
         this.startActivity(intent);
     }
 
@@ -122,7 +128,7 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
 
             if (!orig_marker.toString().contains("0.0")
                     && !orig_marker.toString().contains("0.0")) {
-                sameOrigin = isSameOrigin(routeList);
+                sameOrigin = LocationUtils.isSameOrigin(routeList);
                 MarkerOptions orig_options = new MarkerOptions();
                 orig_options.position(orig_marker);
                 orig_options.title((routeList.get(0).getNombre_depo_origen()));
@@ -146,7 +152,7 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
                     }
 
                     if (!mMarkerArray.isEmpty()) {
-                        marker_not_exist = isLocationFree(destino_ruta);
+                        marker_not_exist = LocationUtils.isLocationFree(destino_ruta, mMarkerArray);
                     }
 
                     if (marker_not_exist) {
@@ -163,7 +169,7 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
 
                             builder.include(last_marker);
 
-                            String url = getUrl(last_marker, origen_ruta);
+                            String url = LocationUtils.getUrl(last_marker, origen_ruta);
                             Log.d("loadRoute !Origin", url);
                             FetchUrl FetchUrl = new FetchUrl();
                             FetchUrl.execute(url);
@@ -180,7 +186,7 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
                         builder.include(origen_ruta);
                         builder.include(destino_ruta);
 
-                        String url = getUrl(origen_ruta, destino_ruta);
+                        String url = LocationUtils.getUrl(origen_ruta, destino_ruta);
                         Log.d("loadRoute", url);
                         FetchUrl FetchUrl = new FetchUrl();
                         FetchUrl.execute(url);
@@ -229,48 +235,6 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
-    private String getUrl(LatLng origin, LatLng dest) {
-        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-        String sensor = "sensor=false";
-        String parameters = str_origin + "&" + str_dest + "&" + sensor;
-        String output = "json";
-        return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
-    }
-
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
-
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.connect();
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb = new StringBuffer();
-
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-            data = sb.toString();
-            Log.d("downloadUrl", data);
-            br.close();
-
-        } catch (Exception e) {
-            Log.d("Exception", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
-    }
-
     private class FetchUrl extends AsyncTask<String, Void, String> {
 
         @Override
@@ -279,7 +243,7 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
             String data = "";
 
             try {
-                data = downloadUrl(url[0]);
+                data = LocationUtils.downloadUrl(url[0]);
                 Log.d("Background Task data", data.toString());
             } catch (Exception e) {
                 Log.d("Background Task", e.toString());
@@ -467,30 +431,4 @@ public class RoutesFragment extends Fragment implements OnMapReadyCallback,
             }
         });
     }
-
-    private Boolean isLocationFree(LatLng marker_destino) {
-        Boolean exists = true;
-        for (MarkerOptions marker: mMarkerArray) {
-            if (marker_destino.latitude == marker.getPosition().latitude &&
-                    marker_destino.longitude == marker.getPosition().longitude) {
-                exists = false;
-            }
-        }
-        return exists;
-    }
-
-
-    private Boolean isSameOrigin(List<Route> routeList) {
-
-        final Set<LatLng> set_routes = new HashSet<>();
-
-        for (Route route : routeList) {
-            LatLng tmp_latlng = new LatLng(route.getLatitud_origen(), route.getLongitud_origen());
-            if (!set_routes.add(tmp_latlng)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 }

@@ -25,7 +25,7 @@ import sintad.org.sintad_mobile.util.APIClient;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private static final String TAG = "LoginActivity";
+    private static final String TAG = LoginActivity.class.getSimpleName();
     EditText txvUsuario;
     EditText txvPassword;
     Button btnIngresar;
