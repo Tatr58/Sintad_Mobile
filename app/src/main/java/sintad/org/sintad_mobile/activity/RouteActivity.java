@@ -38,6 +38,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +66,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
     ArrayList<MarkerOptions> mMarkerArray = new ArrayList<>();
     String id_order;
     Boolean is_principal = false;
-    Polyline principal_line;
+    ArrayList<Polyline> principal_line = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +99,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
         mMarkerArray = getIntent().getParcelableArrayListExtra("markers");
         id_order = getIntent().getStringExtra("nro_orden");
         int counter = 0;
+        is_principal = false;
 
         for (MarkerOptions marker: mMarkerArray) {
             marker.position(marker.getPosition());
@@ -164,32 +166,7 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
             for (Location location : locationResult.getLocations()) {
                 Log.d(TAG, "Location: " + location.getLatitude() + " " + location.getLongitude());
                 mLastLocation = location;
-                is_principal = true;
-
-
-                if (mCurrLocationMarker != null) {
-                    mCurrLocationMarker.remove();
-                }
-
-                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title("Mi Ubicación");
-                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.location));
-
-                mCurrLocationMarker = mMap.addMarker(markerOptions);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, padding));
-
-                MarkerOptions marker_dest = mMarkerArray.get(0);
-
-                LatLng destino_activo = new LatLng(marker_dest.getPosition().latitude,
-                        marker_dest.getPosition().longitude);
-
-                String url = LocationUtils.getUrl(latLng, destino_activo);
-                Log.d("loadRoute Activa", url);
-                FetchUrl FetchUrl = new RouteActivity.FetchUrl();
-                FetchUrl.execute(url);
+                onLocationChanged(locationResult.getLastLocation());
             }
         }
     };
@@ -206,10 +183,34 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
     @Override
     public void onLocationChanged(Location location) {
-        double lattitude = location.getLatitude();
-        double longitude = location.getLongitude();
-        Log.d("LATT", " " + lattitude);
-        Log.d("LONG", " " + longitude);
+        drawPrincipalLine(location, principal_line);
+    }
+
+    public void drawPrincipalLine(Location location, ArrayList<Polyline> principal) {
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        is_principal = true;
+
+        if (mCurrLocationMarker != null) {
+            mCurrLocationMarker.remove();
+        }
+
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title("Mi Ubicación");
+        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.location));
+
+        mCurrLocationMarker = mMap.addMarker(markerOptions);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, padding));
+
+        MarkerOptions marker_dest = mMarkerArray.get(0);
+
+        LatLng destino_activo = new LatLng(marker_dest.getPosition().latitude,
+                marker_dest.getPosition().longitude);
+
+        String url = LocationUtils.getUrl(latLng, destino_activo);
+        Log.d("loadRoute Activa", url);
+        FetchUrl FetchUrl = new RouteActivity.FetchUrl();
+        FetchUrl.execute(url);
     }
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
@@ -302,6 +303,10 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
                 List<HashMap<String, String>> path = result.get(i);
 
+                for (Polyline line: principal_line) {
+                    line.remove();
+                }
+
                 for (int j = 0; j < path.size(); j++) {
                     HashMap<String, String> point = path.get(j);
 
@@ -317,7 +322,6 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
                 if (is_principal) {
                     lineOptions.color(Color.RED);
-                    is_principal = false;
                 } else {
                     lineOptions.color(Color.BLUE);
                 }
@@ -330,7 +334,8 @@ public class RouteActivity extends AppCompatActivity implements OnMapReadyCallba
 
             if(lineOptions != null) {
                 if(is_principal) {
-                    principal_line = mMap.addPolyline(lineOptions);
+                    principal_line.add(mMap.addPolyline(lineOptions));
+                    is_principal = false;
                 } else {
                     mMap.addPolyline(lineOptions);
                 }
